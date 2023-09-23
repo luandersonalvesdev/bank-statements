@@ -2,12 +2,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from datetime import datetime
 from selenium.webdriver.support.wait import WebDriverWait
-import time
 import json
 
-SPECIFIC_MONTH = None
-SPECIFIC_YEAR = None
-TIMER = 3
+def read_data_json():
+     with open("caixa.json") as file:
+        return json.load(file)
+     
+def formatter_month(month):
+    return month[0].upper() + month[1:].lower()
 
 MONTH_MAP = {
     "1": "Janeiro",
@@ -24,16 +26,21 @@ MONTH_MAP = {
     "12": "Dezembro"
 }
 
-current_month = SPECIFIC_MONTH if SPECIFIC_MONTH else MONTH_MAP[str(datetime.now().month - 1)]
-current_year = SPECIFIC_YEAR if SPECIFIC_YEAR else str(datetime.now().year)
+data = read_data_json()
 
-def formatter_month(month):
-    return month[0].upper() + month[1:].lower()
+USERNAME = data['username']
+PASSWORD = data['password']
+SPECIFIC_MONTH = data['specific_month']
+SPECIFIC_YEAR = data['specific_year']
+TIMER = data['timer']
 
-date_statement =  f'{formatter_month(current_month)}/{current_year}'
+MONTH = SPECIFIC_MONTH if SPECIFIC_MONTH else MONTH_MAP[str(datetime.now().month - 1)]
+YEAR = SPECIFIC_YEAR if SPECIFIC_YEAR else str(datetime.now().year)
+
+DATE_STATEMENT =  f'{formatter_month(MONTH)}/{YEAR}'
 
 def get_statement():
-
+    
     driver = webdriver.Edge()
 
     driver.maximize_window()
@@ -71,7 +78,7 @@ def get_statement():
 
     driver.find_element(By.XPATH, '//div[@id="dk_container_sltOutroMes"]').click()
 
-    driver.find_element(By.XPATH, f'//a[contains(text(), "{date_statement}")]').click()
+    driver.find_element(By.XPATH, f'//a[contains(text(), "{DATE_STATEMENT}")]').click()
 
     driver.find_element(By.XPATH, '//button[@id="confirma"]').click()
 
