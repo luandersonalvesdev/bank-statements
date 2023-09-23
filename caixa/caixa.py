@@ -45,7 +45,7 @@ def get_statement():
 
     driver.find_element(By.XPATH, '//button[@name="btnLogin"]').click()
 
-    driver.implicitly_wait(TIMER)
+    driver.implicitly_wait(TIMER * 2)
 
     driver.find_element(By.XPATH, '//button[@class="iniciaisNomeUsuario"]').click()
 
@@ -57,6 +57,26 @@ def get_statement():
     driver.find_element(By.XPATH, '//button[@id="btnConfirmar"]').click()
     
     driver.implicitly_wait(TIMER * 2)
+
+    driver.find_element(By.XPATH, '//div[@data-menu-id="367"]').click()
+
+    driver.implicitly_wait(TIMER)
+
+    driver.find_element(By.LINK_TEXT, 'Extrato por Período').click()
+
+    driver.implicitly_wait(TIMER * 2)
+
+    driver.find_element(By.XPATH, '//input[@id="rdoTipoExtratoOutro"]').click()
+
+    driver.find_element(By.XPATH, '//div[@id="dk_container_sltOutroMes"]').click()
+
+    driver.find_element(By.XPATH, f'//a[contains(text(), "{date_statement}")]').click()
+
+    driver.find_element(By.XPATH, '//button[@id="confirma"]').click()
+
+    driver.implicitly_wait(TIMER * 2)
+    
+    driver.find_element(By.XPATH, '//button[@id="btnImprimir"]').click()
 
     input('Pressione "Enter" para fechar o navegador...')
 
