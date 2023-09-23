@@ -4,12 +4,15 @@ from datetime import datetime
 from selenium.webdriver.support.wait import WebDriverWait
 import json
 
+
 def read_data_json():
-     with open("caixa.json") as file:
+    with open("caixa.json") as file:
         return json.load(file)
-     
+
+
 def formatter_month(month):
     return month[0].upper() + month[1:].lower()
+
 
 MONTH_MAP = {
     "1": "Janeiro",
@@ -23,24 +26,24 @@ MONTH_MAP = {
     "9": "Setembro",
     "10": "Outubro",
     "11": "Novembro",
-    "12": "Dezembro"
+    "12": "Dezembro",
 }
 
 data = read_data_json()
 
-USERNAME = data['username']
-PASSWORD = data['password']
-SPECIFIC_MONTH = data['specific_month']
-SPECIFIC_YEAR = data['specific_year']
-TIMER = data['timer']
+USERNAME = data["username"]
+PASSWORD = data["password"]
+SPECIFIC_MONTH = data["specific_month"]
+SPECIFIC_YEAR = data["specific_year"]
+TIMER = data["timer"]
 
 MONTH = SPECIFIC_MONTH if SPECIFIC_MONTH else MONTH_MAP[str(datetime.now().month - 1)]
 YEAR = SPECIFIC_YEAR if SPECIFIC_YEAR else str(datetime.now().year)
 
-DATE_STATEMENT =  f'{formatter_month(MONTH)}/{YEAR}'
+DATE_STATEMENT = f"{formatter_month(MONTH)}/{YEAR}"
+
 
 def get_statement():
-    
     driver = webdriver.Edge()
 
     driver.maximize_window()
@@ -49,7 +52,9 @@ def get_statement():
 
     driver.implicitly_wait(TIMER)
 
-    driver.find_element(By.XPATH, '//input[@id="nomeUsuario"]').send_keys(USERNAME.lower())
+    driver.find_element(By.XPATH, '//input[@id="nomeUsuario"]').send_keys(
+        USERNAME.lower()
+    )
 
     driver.find_element(By.XPATH, '//button[@name="btnLogin"]').click()
 
@@ -60,17 +65,19 @@ def get_statement():
     driver.implicitly_wait(TIMER)
 
     for letter in PASSWORD:
-        driver.find_element(By.XPATH, f'//li[contains(text(), "{letter.lower()}")]').click()
+        driver.find_element(
+            By.XPATH, f'//li[contains(text(), "{letter.lower()}")]'
+        ).click()
 
     driver.implicitly_wait(TIMER)
 
     driver.find_element(By.XPATH, '//button[@id="btnConfirmar"]').click()
-    
+
     driver.implicitly_wait(TIMER + (TIMER / 2))
 
     driver.find_element(By.XPATH, '//div[@data-menu-id="367"]').click()
 
-    driver.find_element(By.LINK_TEXT, 'Extrato por Período').click()
+    driver.find_element(By.LINK_TEXT, "Extrato por Período").click()
 
     driver.implicitly_wait(TIMER)
 
@@ -83,7 +90,7 @@ def get_statement():
     driver.find_element(By.XPATH, '//button[@id="confirma"]').click()
 
     driver.implicitly_wait(TIMER / 2)
-    
+
     driver.find_element(By.XPATH, '//button[@id="btnImprimir"]').click()
 
     input('Pressione "Enter" para fechar o navegador...')
@@ -92,4 +99,4 @@ def get_statement():
 
 
 if __name__ == "__main__":
-        get_statement()
+    get_statement()
