@@ -28,3 +28,41 @@ def formatter_month(month):
     return month[0].upper() + month[1:].lower()
 
 date_statement =  f'{formatter_month(current_month)}/{current_year}'
+
+def get_statement():
+
+    TIMER = 5
+
+    driver = webdriver.Edge()
+
+    driver.maximize_window()
+
+    driver.get("https://internetbanking.caixa.gov.br/sinbc/#!nb/login")
+
+    driver.implicitly_wait(TIMER)
+
+    driver.find_element(By.XPATH, '//input[@id="nomeUsuario"]').send_keys(USERNAME.lower())
+
+    driver.find_element(By.XPATH, '//button[@name="btnLogin"]').click()
+
+    driver.implicitly_wait(TIMER)
+
+    driver.find_element(By.XPATH, '//button[@class="iniciaisNomeUsuario"]').click()
+
+    driver.implicitly_wait(TIMER)
+
+    for letter in PASSWORD:
+        driver.find_element(By.XPATH, f'//li[contains(text(), "{letter.lower()}")]').click()
+
+    driver.find_element(By.XPATH, '//button[@id="btnConfirmar"]').click()
+    
+    driver.implicitly_wait(TIMER * 2)
+
+    input('Pressione "Enter" para fechar o navegador...')
+
+    driver.quit()
+
+
+if __name__ == "__main__":
+    get_statement()
+    ...
