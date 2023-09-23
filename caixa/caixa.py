@@ -1,10 +1,13 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import json
 from datetime import datetime
+from selenium.webdriver.support.wait import WebDriverWait
+import time
+import json
 
 SPECIFIC_MONTH = None
 SPECIFIC_YEAR = None
+TIMER = 3
 
 MONTH_MAP = {
     "1": "Janeiro",
@@ -31,8 +34,6 @@ date_statement =  f'{formatter_month(current_month)}/{current_year}'
 
 def get_statement():
 
-    TIMER = 5
-
     driver = webdriver.Edge()
 
     driver.maximize_window()
@@ -45,7 +46,7 @@ def get_statement():
 
     driver.find_element(By.XPATH, '//button[@name="btnLogin"]').click()
 
-    driver.implicitly_wait(TIMER * 2)
+    driver.implicitly_wait(TIMER)
 
     driver.find_element(By.XPATH, '//button[@class="iniciaisNomeUsuario"]').click()
 
@@ -54,17 +55,17 @@ def get_statement():
     for letter in PASSWORD:
         driver.find_element(By.XPATH, f'//li[contains(text(), "{letter.lower()}")]').click()
 
+    driver.implicitly_wait(TIMER)
+
     driver.find_element(By.XPATH, '//button[@id="btnConfirmar"]').click()
     
-    driver.implicitly_wait(TIMER * 2)
+    driver.implicitly_wait(TIMER + (TIMER / 2))
 
     driver.find_element(By.XPATH, '//div[@data-menu-id="367"]').click()
 
-    driver.implicitly_wait(TIMER)
-
     driver.find_element(By.LINK_TEXT, 'Extrato por Período').click()
 
-    driver.implicitly_wait(TIMER * 2)
+    driver.implicitly_wait(TIMER)
 
     driver.find_element(By.XPATH, '//input[@id="rdoTipoExtratoOutro"]').click()
 
@@ -74,7 +75,7 @@ def get_statement():
 
     driver.find_element(By.XPATH, '//button[@id="confirma"]').click()
 
-    driver.implicitly_wait(TIMER * 2)
+    driver.implicitly_wait(TIMER / 2)
     
     driver.find_element(By.XPATH, '//button[@id="btnImprimir"]').click()
 
@@ -84,5 +85,4 @@ def get_statement():
 
 
 if __name__ == "__main__":
-    get_statement()
-    ...
+        get_statement()
