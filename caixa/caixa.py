@@ -2,6 +2,10 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from datetime import datetime
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
+from month_map import MONTH_MAP
+import time
 import json
 
 
@@ -14,88 +18,119 @@ def formatter_month(month):
     return month[0].upper() + month[1:].lower()
 
 
-MONTH_MAP = {
-    "1": "Janeiro",
-    "2": "Fevereiro",
-    "3": "Março",
-    "4": "Abril",
-    "5": "Maio",
-    "6": "Junho",
-    "7": "Julho",
-    "8": "Agosto",
-    "9": "Setembro",
-    "10": "Outubro",
-    "11": "Novembro",
-    "12": "Dezembro",
-}
-
 data = read_data_json()
 
 USERNAME = data["username"]
 PASSWORD = data["password"]
 SPECIFIC_MONTH = data["specific_month"]
 SPECIFIC_YEAR = data["specific_year"]
-TIMER = data["timer"]
+WAIT_TIME = data["wait_time"]
+MAX_RETRIES = data["max_retries"]
 
 MONTH = SPECIFIC_MONTH if SPECIFIC_MONTH else MONTH_MAP[str(datetime.now().month - 1)]
 YEAR = SPECIFIC_YEAR if SPECIFIC_YEAR else str(datetime.now().year)
-
 DATE_STATEMENT = f"{formatter_month(MONTH)}/{YEAR}"
+
+URL_CAIXA = "https://internetbanking.caixa.gov.br/sinbc/#!nb/login"
+
+
+def find_element_with_retry(
+    driver, by, value, max_retries=MAX_RETRIES, wait_time=WAIT_TIME
+):
+    retries = 0
+    while retries < max_retries:
+        try:
+            element = driver.find_element(by, value)
+            wait = WebDriverWait(driver, wait_time)
+            wait.until(lambda d: element.is_displayed())
+            return element
+
+        except NoSuchElementException:
+            print(
+                f'Elemento "{value}" não encontrado, tentando novamente ({retries+1}/{max_retries})...'
+            )
+            retries += 1
+            time.sleep(wait_time)
+    raise NoSuchElementException(
+        f'Elemento "{value}" não encontrado após {max_retries} tentativas. O script foi encerrado.'
+    )
 
 
 def get_statement():
-    driver = webdriver.Edge()
+    try:
+        driver = webdriver.Edge()
 
-    driver.maximize_window()
+        driver.maximize_window()
 
-    driver.get("https://internetbanking.caixa.gov.br/sinbc/#!nb/login")
+        driver.get(URL_CAIXA)
 
-    driver.implicitly_wait(TIMER)
+        input_user = find_element_with_retry(
+            driver, By.XPATH, '//input[@id="nomeUsuario"]'
+        )
+        input_user.send_keys(USERNAME.lower())
 
-    driver.find_element(By.XPATH, '//input[@id="nomeUsuario"]').send_keys(
-        USERNAME.lower()
-    )
+        btn_continue = find_element_with_retry(
+            driver, By.XPATH, '//button[@name="btnLogin"]'
+        )
+        btn_continue.click()
 
-    driver.find_element(By.XPATH, '//button[@name="btnLogin"]').click()
+        btn_initial_letters = find_element_with_retry(
+            driver, By.XPATH, '//button[@id="lnkInitials"]'
+        )
+        btn_initial_letters.click()
 
-    driver.implicitly_wait(TIMER)
+        for letter in PASSWORD:
+            li_letter = find_element_with_retry(
+                driver, By.XPATH, f'//li[contains(text(), "{letter.lower()}")]'
+            )
+            li_letter.click()
 
-    driver.find_element(By.XPATH, '//button[@class="iniciaisNomeUsuario"]').click()
+        btn_confirma_password = find_element_with_retry(
+            driver, By.XPATH, '//button[@id="btnConfirmar"]'
+        )
+        btn_confirma_password.click()
 
-    driver.implicitly_wait(TIMER)
+        btn_my_account = find_element_with_retry(
+            driver, By.XPATH, '//*[@id="categoriaContainer"]/div/p'
+        )
+        btn_my_account.click()
 
-    for letter in PASSWORD:
-        driver.find_element(
-            By.XPATH, f'//li[contains(text(), "{letter.lower()}")]'
+        a_per_period = find_element_with_retry(
+            driver, By.LINK_TEXT, "Extrato por Período"
+        )
+        a_per_period.click()
+
+        radio_other_month = find_element_with_retry(
+            driver, By.XPATH, '//input[@id="rdoTipoExtratoOutro"]'
+        )
+        radio_other_month.click()
+
+        select_month = find_element_with_retry(
+            driver, By.XPATH, '//div[@id="dk_container_sltOutroMes"]'
+        )
+        select_month.click()
+
+        option_month = find_element_with_retry(
+            driver, By.XPATH, f'//a[contains(text(), "{DATE_STATEMENT}")]'
+        )
+        option_month.click()
+
+        btn_continue = find_element_with_retry(
+            driver, By.XPATH, '//button[@id="confirma"]'
         ).click()
 
-    driver.implicitly_wait(TIMER)
+        btn_print_out = find_element_with_retry(
+            driver, By.XPATH, '//button[@id="btnImprimir"]'
+        )
+        btn_print_out.click()
 
-    driver.find_element(By.XPATH, '//button[@id="btnConfirmar"]').click()
+        input('Pressione "Enter" para fechar o navegador...')
 
-    driver.implicitly_wait(TIMER + (TIMER / 2))
+    except NoSuchElementException as e:
+        print(e)
 
-    driver.find_element(By.XPATH, '//div[@data-menu-id="367"]').click()
-
-    driver.find_element(By.LINK_TEXT, "Extrato por Período").click()
-
-    driver.implicitly_wait(TIMER)
-
-    driver.find_element(By.XPATH, '//input[@id="rdoTipoExtratoOutro"]').click()
-
-    driver.find_element(By.XPATH, '//div[@id="dk_container_sltOutroMes"]').click()
-
-    driver.find_element(By.XPATH, f'//a[contains(text(), "{DATE_STATEMENT}")]').click()
-
-    driver.find_element(By.XPATH, '//button[@id="confirma"]').click()
-
-    driver.implicitly_wait(TIMER / 2)
-
-    driver.find_element(By.XPATH, '//button[@id="btnImprimir"]').click()
-
-    input('Pressione "Enter" para fechar o navegador...')
-
-    driver.quit()
+    finally:
+        driver.quit()
 
 
 if __name__ == "__main__":
