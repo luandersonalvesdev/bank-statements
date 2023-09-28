@@ -1,0 +1,8 @@
+{
+    "username": "USERNAME",
+    "password": "PASSWORD",
+    "specific_month": "",
+    "specific_year": "",
+    "wait_time": 2,
+    "max_retries": 5
+}
