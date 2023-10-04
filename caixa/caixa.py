@@ -2,15 +2,17 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from datetime import datetime
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from month_map import MONTH_MAP
 import time
 import json
+import os
 
 
 def read_data_json():
-    with open("caixa.json") as file:
+    script_dir = os.path.dirname(__file__)
+    json_path = os.path.join(script_dir, "caixa.json")
+    with open(json_path) as file:
         return json.load(file)
 
 
@@ -21,14 +23,23 @@ def formatter_month(month):
 data = read_data_json()
 
 USERNAME = data["username"]
+
 PASSWORD = data["password"]
+
 SPECIFIC_MONTH = data["specific_month"]
+
 SPECIFIC_YEAR = data["specific_year"]
+
 WAIT_TIME = data["wait_time"]
+
 MAX_RETRIES = data["max_retries"]
 
-MONTH = SPECIFIC_MONTH if SPECIFIC_MONTH else MONTH_MAP[str(datetime.now().month - 1)]
+MONTH = SPECIFIC_MONTH if SPECIFIC_MONTH else MONTH_MAP[
+    str(datetime.now().month - 1)
+    ]
+
 YEAR = SPECIFIC_YEAR if SPECIFIC_YEAR else str(datetime.now().year)
+
 DATE_STATEMENT = f"{formatter_month(MONTH)}/{YEAR}"
 
 URL_CAIXA = "https://internetbanking.caixa.gov.br/sinbc/#!nb/login"
@@ -46,13 +57,15 @@ def find_element_with_retry(
             return element
 
         except NoSuchElementException:
-            print(
-                f'Elemento "{value}" não encontrado, tentando novamente ({retries+1}/{max_retries})...'
-            )
             retries += 1
+            print(
+                f'Elemento "{value}" não encontrado, '
+                f'tentando novamente ({retries}/{max_retries})...'
+            )
             time.sleep(wait_time)
     raise NoSuchElementException(
-        f'Elemento "{value}" não encontrado após {max_retries} tentativas. O script foi encerrado.'
+        f'Elemento "{value}" não encontrado após '
+        f'{max_retries} tentativas. O script foi encerrado.'
     )
 
 
