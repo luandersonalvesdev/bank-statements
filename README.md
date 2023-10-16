@@ -7,16 +7,16 @@ O projeto **Bank Statements** é uma coleção de bots desenvolvidos para automa
 A estrutura do projeto é organizada de forma que cada instituição financeira é representada por uma pasta dedicada:
 
 ```
-Bank Statements/
-├── BancoA/
+bank_statements/
+── banco_a/
 │ ├── banco_a.py
 │ ├── README.md
 │ └── ...
-├── BancoB/
+├── banco_b/
 │ ├── banco_b.py
 │ ├── README.md
 │ └── ...
-├── BancoC/
+├── banco_c/
 │ ├── banco_c.py
 │ ├── README.md
 │ └── ...
