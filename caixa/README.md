@@ -76,7 +76,7 @@ python3 -m venv nome_do_ambiente
 
 4. Instale as dependências a partir do `requirements.txt`
 ```bash
-pip install -r requirements.txt
+pip install -r dev-requirements.txt
 ```
 
 5. Entre na pasta da Caixa e crie o arquivo com suas informações de login e configurações já mencionado [aqui](#configuração).
